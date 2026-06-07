@@ -1,40 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Reno Platforms Notice Board
+
+A responsive and feature-rich central Notice Board application built for the **Reno Platforms Web Development Internship Assignment**. The application supports full CRUD operations (Create, Read, Update, Delete) and establishes a connection using Prisma 7 and a PostgreSQL database.
+
+## Tech Stack
+- **Framework**: Next.js (Pages Router)
+- **Database ORM**: Prisma v7.8.0
+- **Driver Adapter**: `@prisma/adapter-pg` + `pg` (PostgreSQL)
+- **Styling**: Tailwind CSS v4
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### 1. Prerequisites
+Ensure you have Node.js (v18+) and npm installed on your system.
 
+### 2. Install Dependencies
+Clone this repository and run the following command in the project root to install the packages:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Setup Environment Variables
+Create a `.env` file in the project root and add your database connection string:
+```env
+DATABASE_URL="postgresql://<username>:<password>@<host>:<port>/<database>"
+```
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+### 4. Sync Database Schema & Generate Prisma Client
+Since this project utilizes Prisma 7's new query engine, compile the schema and generate the client code:
+```bash
+npx prisma generate
+```
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+### 5. Start the Development Server
+Launch the local development environment:
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Bonus Feature: Optional Notice Cover Images
+We implemented the bonus optional image support:
+- Users can input any custom image URL or quickly select from high-quality preset campus photography options (Library, Graduation Day, Campus, Sports Fields) in the form.
+- Notice cards dynamically adjust to show a cropped cover image when provided, and stay compact when omitted.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## AI Usage Disclosure
+In accordance with the assignment guidelines, the following is an honest description of how AI was utilized during this project:
+- **Architecture Assistance**: Utilized AI to resolve structural configuration conflicts around the upgrade to **Prisma 7**. Specifically, AI helped map the new `prisma-client` configuration block and resolve the `PrismaClientInitializationError` by structuring the `@prisma/adapter-pg` driver adapter.
+- **Aesthetic Refinement**: AI assisted in translating the custom designs into utility classes matching Reno Platforms' branding.
+- **Code Generation**: AI was used to write code for server-side validation routines, layout grids, and preset structures.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+## Future Improvements
+If given more time, the following features would be implemented:
+1. **Direct File Uploads**: Integrate with AWS S3 or Cloudinary so users can drag-and-drop or select local images from their device, rather than inputting image URLs.
+2. **Search and Tag Filters**: Add a client-side search bar and category pills filter (All, Exam, Event, General) to let institutional users quickly locate announcements.
+3. **Optimistic UI Updates**: Improve the user experience of deleting notices by immediately hiding the card from the UI before the API request completes, with an automatic rollback if the request fails.

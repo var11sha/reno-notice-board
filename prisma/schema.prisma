@@ -21,5 +21,6 @@ datasource db {
      category    String   // Exam, Event, or General
      priority    String   // Normal or Urgent
      publishDate DateTime
+     image       String?  // Optional image URL (Bonus)
      createdAt   DateTime @default(now())
    }

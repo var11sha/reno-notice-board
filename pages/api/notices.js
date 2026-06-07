@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { title, body, category, priority, publishDate } = req.body;
+    const { title, body, category, priority, publishDate, image } = req.body;
 
     // Hard Rule: Server-side text validation
     if (!title || !body || !category || !priority || !publishDate) {
@@ -21,7 +21,14 @@ export default async function handler(req, res) {
     }
 
     const newNotice = await prisma.notice.create({
-      data: { title, body, category, priority, publishDate: new Date(publishDate) }
+      data: { 
+        title, 
+        body, 
+        category, 
+        priority, 
+        publishDate: new Date(publishDate),
+        image: image || null
+      }
     });
     return res.status(201).json(newNotice);
   }
