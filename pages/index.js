@@ -6,6 +6,9 @@ export default function Home() {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [noticeToDelete, setNoticeToDelete] = useState(null);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const router = useRouter();
 
   const fetchNotices = async () => {
@@ -43,15 +46,35 @@ export default function Home() {
     fetchNotices();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to permanently delete this notice?")) {
-      try {
-        await fetch(`/api/notices/${id}`, { method: 'DELETE' });
+  const triggerDelete = (notice) => {
+    setNoticeToDelete(notice);
+    setShowConfirmModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!noticeToDelete) return;
+    try {
+      const res = await fetch(`/api/notices/${noticeToDelete.id}`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast("Announcement deleted successfully!", "success");
         fetchNotices();
-      } catch (err) {
-        alert("Failed to delete notice.");
+      } else {
+        showToast("Failed to delete notice.", "error");
       }
+    } catch (err) {
+      console.error(err);
+      showToast("An error occurred while deleting the notice.", "error");
+    } finally {
+      setShowConfirmModal(false);
+      setNoticeToDelete(null);
     }
+  };
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 4000);
   };
 
   const handleEditRedirect = (notice) => {
@@ -273,7 +296,7 @@ export default function Home() {
                       </button>
                       <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
                       <button 
-                        onClick={() => handleDelete(notice.id)} 
+                        onClick={() => triggerDelete(notice)} 
                         className="inline-flex items-center text-slate-400 hover:text-rose-600 py-1 px-2.5 hover:bg-rose-50 rounded-lg transition duration-150 cursor-pointer"
                       >
                         <svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -289,6 +312,79 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Custom Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          {/* Backdrop */}
+          <div 
+            onClick={() => {
+              setShowConfirmModal(false);
+              setNoticeToDelete(null);
+            }}
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+          ></div>
+          
+          {/* Card */}
+          <div className="relative bg-white rounded-3xl p-8 max-w-sm w-full border border-slate-100 shadow-2xl transform scale-100 transition-all duration-300 ease-out animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center space-y-4">
+              {/* Warning Icon */}
+              <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 border border-rose-100/60 shadow-sm">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"></path>
+                </svg>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="text-lg font-bold text-slate-900">Delete Announcement?</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                  Are you sure you want to permanently delete <strong className="text-slate-800 font-semibold">"{noticeToDelete?.title}"</strong>? This action cannot be undone.
+                </p>
+              </div>
+
+              <div className="flex gap-3 w-full pt-4">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setShowConfirmModal(false);
+                    setNoticeToDelete(null);
+                  }}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 text-xs font-bold py-3 px-4 rounded-xl transition duration-150 cursor-pointer text-center"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button"
+                  onClick={confirmDelete}
+                  className="flex-1 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white text-xs font-bold py-3 px-4 rounded-xl transition duration-150 cursor-pointer text-center shadow-lg shadow-rose-900/10"
+                >
+                  Yes, Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className="fixed bottom-6 right-6 z-[110] flex items-center gap-3 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-xl shadow-slate-950/20 border border-slate-800 animate-in slide-in-from-bottom-5 fade-in duration-300">
+          {toast.type === 'success' ? (
+            <div className="w-5 h-5 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"></path>
+              </svg>
+            </div>
+          ) : (
+            <div className="w-5 h-5 bg-rose-500/10 text-rose-400 rounded-lg flex items-center justify-center">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"></path>
+              </svg>
+            </div>
+          )}
+          <span className="text-xs font-semibold tracking-wide">{toast.message}</span>
+        </div>
+      )}
     </div>
   );
 }
